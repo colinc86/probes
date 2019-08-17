@@ -6,6 +6,6 @@ import (
 )
 
 func TestCreateProbe(t *testing.T) {
-	p := NewProbeFloat64(100)
+	p := NewProbe(100)
 	fmt.Println(p)
 }

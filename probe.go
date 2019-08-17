@@ -33,7 +33,7 @@ type Probe struct {
 
 // NewProbe creates and returns a new probe.
 func NewProbe(maxSignalLength int) *Probe {
-	return &ProbeFloat64{
+	return &Probe{
 		MaximumSignalLength: maxSignalLength,
 		Identifier:          uuid.New(),
 		C:                   make(chan float64),
@@ -58,10 +58,12 @@ func (p *Probe) Activate(bufferSize int) {
 
 	go func() {
 		for f := range p.C {
+			p.signalMutex.Lock()
 			p.signal = append(p.signal, f)
 			if len(p.signal) > p.MaximumSignalLength {
 				p.signal = p.signal[len(p.signal)-p.MaximumSignalLength:]
 			}
+			p.signalMutex.Unlock()
 		}
 	}()
 }
@@ -69,14 +71,14 @@ func (p *Probe) Activate(bufferSize int) {
 // Deactivate deactivates the probe and returns the signal it collected.
 // Optionally, it also saves a plot of its signal.
 func (p *Probe) Deactivate(produceImage bool) []float64 {
-	p.stateMutex.Lock()
-	defer p.stateMutex.Unlock()
+	p.activeMutex.Lock()
+	defer p.activeMutex.Unlock()
 
-	if p.state == probeStateInactive {
+	if !p.active {
 		return nil
 	}
 
-	p.state = probeStateInactive
+	p.active = false
 	close(p.C)
 
 	if produceImage {
@@ -92,7 +94,7 @@ func (p *Probe) RecentValue() float64 {
 	p.signalMutex.Lock()
 	defer p.signalMutex.Unlock()
 
-	if len(p.signalMutex) > 0 {
+	if len(p.signal) > 0 {
 		return p.signal[len(p.signal)-1]
 	}
 
