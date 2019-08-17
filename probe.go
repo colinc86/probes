@@ -11,26 +11,28 @@ import (
 	"gonum.org/v1/plot/vg"
 )
 
-type ProbeState int32
-
-const (
-	ProbeStateInactive ProbeState = 0
-	ProbeStateActive   ProbeState = 1
-)
-
-type Probe interface {
-}
-
-type ProbeFloat64 struct {
+// Probe types reprepsent a digital probe which captures a signal and outputs
+// that signal to an array and, optionally, an image for inspection.
+type Probe struct {
+	// The maximum length of the probe's internal signal history.
 	MaximumSignalLength int
-	Identifier          uuid.UUID
-	C                   chan float64
-	signal              []float64
-	state               ProbeState
-	stateMutex          sync.Mutex
+
+	// The probe's identifier.
+	Identifier uuid.UUID
+
+	// The probe's input channel.
+	C chan float64
+
+	signal      []float64
+	signalMutex sync.Mutex
+	active      bool
+	activeMutex sync.Mutex
 }
 
-func NewProbeFloat64(maxSignalLength int) *ProbeFloat64 {
+// MARK: Initializers
+
+// NewProbe creates and returns a new probe.
+func NewProbe(maxSignalLength int) *Probe {
 	return &ProbeFloat64{
 		MaximumSignalLength: maxSignalLength,
 		Identifier:          uuid.New(),
@@ -38,12 +40,22 @@ func NewProbeFloat64(maxSignalLength int) *ProbeFloat64 {
 	}
 }
 
-func (p *ProbeFloat64) Activate(bufferSize int) chan float64 {
-	p.stateMutex.Lock()
-	p.state = ProbeStateActive
-	p.stateMutex.Unlock()
+// MARK: Public methods
 
+// Activate activates the probe and begins waiting for signal values over its
+// input channel.
+func (p *Probe) Activate(bufferSize int) {
+	p.activeMutex.Lock()
+	defer p.activeMutex.Unlock()
+
+	if p.active {
+		return
+	}
+
+	p.active = true
+	p.signal = nil
 	p.C = make(chan float64, bufferSize)
+
 	go func() {
 		for f := range p.C {
 			p.signal = append(p.signal, f)
@@ -52,25 +64,44 @@ func (p *ProbeFloat64) Activate(bufferSize int) chan float64 {
 			}
 		}
 	}()
-
-	return p.C
 }
 
-func (p *ProbeFloat64) Deactivate(produceImage bool) []float64 {
+// Deactivate deactivates the probe and returns the signal it collected.
+// Optionally, it also saves a plot of its signal.
+func (p *Probe) Deactivate(produceImage bool) []float64 {
+	p.stateMutex.Lock()
+	defer p.stateMutex.Unlock()
+
+	if p.state == probeStateInactive {
+		return nil
+	}
+
+	p.state = probeStateInactive
 	close(p.C)
 
-	p.stateMutex.Lock()
-	p.state = ProbeStateInactive
-	p.stateMutex.Unlock()
-
 	if produceImage {
-		plotSignal(p.signal, "Probe Input", fmt.Sprintf("Probe %s", p.Identifier), "Value", "Update", fmt.Sprintf("%s.png", p.Identifier))
+		p.plotSignal(p.signal, "Probe Input", fmt.Sprintf("Probe %s", p.Identifier), "Value", "Update", fmt.Sprintf("%s.png", p.Identifier))
 	}
 
 	return p.signal
 }
 
-func plotSignal(signal []float64, series string, title string, xAxis string, yAxis string, file string) {
+// RecentValue retrieves the most recent value collected by the probe or 0.0 if
+// a value has not been collected.
+func (p *Probe) RecentValue() float64 {
+	p.signalMutex.Lock()
+	defer p.signalMutex.Unlock()
+
+	if len(p.signalMutex) > 0 {
+		return p.signal[len(p.signal)-1]
+	}
+
+	return 0.0
+}
+
+// MARK: Private methods
+
+func (p *Probe) plotSignal(signal []float64, series string, title string, xAxis string, yAxis string, file string) {
 	pe, err := plot.New()
 	if err != nil {
 		panic(err)
