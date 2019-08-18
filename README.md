@@ -14,6 +14,7 @@ for var i := 0; i < 10; i++ {
   p.C <- float64(i)
 }
 
+p.Flush()
 p.Deactivate()
 ```
 
@@ -59,4 +60,26 @@ p.InputBufferLength = 10
 if !p.IsActive() {
   p.MaximumSignalLength = 100
 }
+```
+
+### Blocking and Non-Blocking
+`Probe` provides two ways to pass input to the probe:
+- The input channel, `C`. (non-blocking)
+- The `Push` method. (blocking)
+
+Use whichever is more appropriate, but be aware that calling `Deactivate` on a probe does not automatically flush the probes input channel buffer. You must call `Flush` before calling `Deactivate` to ensure that all values will be represented in the probe's signal.
+
+Mixing input methods by using both the channel and push method is supported by the push method's `flush` parameter. Set this to true to preserve input order in the probe's signal.
+
+```go
+p := NewProbe()
+p.Activate()
+
+// Some work...
+for var i := 0; i < 10; i++ {
+  p.C <- float64(i)
+}
+
+p.Push(10, true)
+p.Deactivate()
 ```

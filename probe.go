@@ -84,6 +84,42 @@ func (p *Probe) IsActive() bool {
 	return p.active
 }
 
+// Flush flushes the probe's input buffer if values were given to the buffer via
+// its input channel.
+func (p *Probe) Flush() {
+	p.signalMutex.Lock()
+	defer p.signalMutex.Unlock()
+
+	length := len(p.C)
+	for i := 0; i < length; i++ {
+		p.signal = append(p.signal, <-p.C)
+	}
+
+	if len(p.signal) > p.MaximumSignalLength {
+		p.signal = p.signal[len(p.signal)-p.MaximumSignalLength:]
+	}
+}
+
+// Push appends a value to the probe's signal after, optionally, flushing any
+// values in the probe's input channel buffer.
+func (p *Probe) Push(value float64, flush bool) {
+	p.signalMutex.Lock()
+	defer p.signalMutex.Unlock()
+
+	if flush {
+		length := len(p.C)
+		for i := 0; i < length; i++ {
+			p.signal = append(p.signal, <-p.C)
+		}
+	}
+
+	p.signal = append(p.signal, value)
+
+	if len(p.signal) > p.MaximumSignalLength {
+		p.signal = p.signal[len(p.signal)-p.MaximumSignalLength:]
+	}
+}
+
 // ClearSignal removes all elements from the probe's input signal.
 func (p *Probe) ClearSignal() {
 	p.signalMutex.Lock()
