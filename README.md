@@ -1,5 +1,5 @@
 # probes
-The probes package helps examine numerical values that change over time.
+The probes package helps examine numerical values that change over time by providing methods to collect values safely across goroutines through the `Probe` structure.
 
 ## Usage
 ### Activation/Deactivation
