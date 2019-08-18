@@ -1,6 +1,7 @@
 package probes
 
 import (
+	"fmt"
 	"math"
 	"sync"
 
@@ -111,7 +112,7 @@ func (p *Probe) RecentValue() float64 {
 }
 
 // WriteSignalToPNG draws the probe's input signal to a PNG and saves it with
-// the provided filename.
+// the provided filename and appends the ".png" extension.
 func (p *Probe) WriteSignalToPNG(filename string) error {
 	p.signalMutex.Lock()
 	defer p.signalMutex.Unlock()
@@ -136,7 +137,7 @@ func (p *Probe) WriteSignalToPNG(filename string) error {
 	}
 
 	// Save the plot to a PNG file.
-	if err := pe.Save(16*vg.Inch, 8*vg.Inch, filename); err != nil {
+	if err := pe.Save(16*vg.Inch, 8*vg.Inch, fmt.Sprintf("%s.png", filename)); err != nil {
 		return err
 	}
 
