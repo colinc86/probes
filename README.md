@@ -25,7 +25,7 @@ Examine the probe's input signal at any time by using the `Signal` and `RecentVa
 // "9"
 fmt.Println(p.RecentValue())
 
-// "{0 1 2 3 4 5 6 7 8 9}"
+// "[0 1 2 3 4 5 6 7 8 9]"
 fmt.Println(p.Signal())
 
 // Plot the signal and save to testSignal.png
