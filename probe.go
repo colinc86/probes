@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/google/uuid"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
@@ -17,8 +16,8 @@ type Probe struct {
 	// The maximum length of the probe's internal signal history.
 	MaximumSignalLength int
 
-	// The probe's identifier.
-	Identifier uuid.UUID
+	// The probe's name.
+	Name string
 
 	// The probe's input channel.
 	C chan float64
@@ -32,10 +31,10 @@ type Probe struct {
 // MARK: Initializers
 
 // NewProbe creates and returns a new probe.
-func NewProbe(maxSignalLength int) *Probe {
+func NewProbe(name string, maxSignalLength int) *Probe {
 	return &Probe{
 		MaximumSignalLength: maxSignalLength,
-		Identifier:          uuid.New(),
+		Name:                name,
 		C:                   make(chan float64),
 	}
 }
@@ -82,7 +81,7 @@ func (p *Probe) Deactivate(produceImage bool) []float64 {
 	close(p.C)
 
 	if produceImage {
-		p.plotSignal(p.signal, "Probe Input", fmt.Sprintf("Probe %s", p.Identifier), "Value", "Update", fmt.Sprintf("%s.png", p.Identifier))
+		p.plotSignal(p.signal, "Probe Input", fmt.Sprintf("Probe %s", p.Name), "Value", "Update", fmt.Sprintf("%s.png", p.Name))
 	}
 
 	return p.signal

@@ -5,7 +5,6 @@ go 1.12
 require (
 	github.com/ajstarks/svgo v0.0.0-20181006003313-6ce6a3bcf6cd // indirect
 	github.com/fogleman/gg v1.3.0 // indirect
-	github.com/google/uuid v1.1.1
 	github.com/jung-kurt/gofpdf v1.9.0 // indirect
 	golang.org/x/exp v0.0.0-20190731235908-ec7cb31e5a56 // indirect
 	golang.org/x/image v0.0.0-20190802002840-cff245a6509b // indirect
