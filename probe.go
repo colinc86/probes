@@ -1,14 +1,8 @@
 package probes
 
 import (
-	"fmt"
 	"math"
 	"sync"
-
-	"gonum.org/v1/plot"
-	"gonum.org/v1/plot/plotter"
-	"gonum.org/v1/plot/plotutil"
-	"gonum.org/v1/plot/vg"
 )
 
 // Probe types reprepsent a digital probe which captures a signal and outputs
@@ -144,37 +138,4 @@ func (p *Probe) RecentValue() float64 {
 	}
 
 	return 0.0
-}
-
-// WriteSignalToPNG draws the probe's input signal to a PNG and saves it with
-// the provided filename and appends the ".png" extension.
-func (p *Probe) WriteSignalToPNG(filename string) error {
-	p.signalMutex.Lock()
-	defer p.signalMutex.Unlock()
-
-	pe, err := plot.New()
-	if err != nil {
-		return err
-	}
-
-	pe.Title.Text = "Probe Input"
-	pe.X.Label.Text = "Update"
-	pe.Y.Label.Text = "Value"
-
-	plotValues := make(plotter.XYs, len(p.signal))
-	for i, v := range p.signal {
-		plotValues[i].X = float64(i)
-		plotValues[i].Y = v
-	}
-
-	if err := plotutil.AddLines(pe, "Probe Input", plotValues); err != nil {
-		return err
-	}
-
-	// Save the plot to a PNG file.
-	if err := pe.Save(16*vg.Inch, 8*vg.Inch, fmt.Sprintf("%s.png", filename)); err != nil {
-		return err
-	}
-
-	return nil
 }

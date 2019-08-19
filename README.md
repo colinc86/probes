@@ -19,7 +19,7 @@ p.Deactivate()
 ```
 
 ### Examining the Input Signal
-Examine the probe's input signal at any time by using the `Signal` and `RecentValue` methods, or save a plot of the signal to file.
+Examine the probe's input signal at any time by using the `Signal` and `RecentValue` methods.
 
 ```go
 // "9"
@@ -27,9 +27,6 @@ fmt.Println(p.RecentValue())
 
 // "[0 1 2 3 4 5 6 7 8 9]"
 fmt.Println(p.Signal())
-
-// Plot the signal and save to testSignal.png
-p.WriteSignalToPNG("testSignal")
 ```
 
 ### Reuse
