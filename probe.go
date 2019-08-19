@@ -65,7 +65,6 @@ func (p *Probe) Activate() {
 }
 
 // Deactivate deactivates the probe and returns the signal it collected.
-// Optionally, it also saves a plot of its signal.
 func (p *Probe) Deactivate() []float64 {
 	if !p.IsActive() {
 		return nil
