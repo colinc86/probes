@@ -1,3 +1,5 @@
+// Package probes provides types to inspect varying numerical values safely
+// across many goroutines.
 package probes
 
 import (
@@ -6,7 +8,7 @@ import (
 )
 
 // Probe types reprepsent a digital probe which captures a signal and outputs
-// that signal to an array and, optionally, an image for inspection.
+// that signal to an array for inspection.
 type Probe struct {
 	// The maximum length of the probe's internal signal history.
 	MaximumSignalLength int
@@ -25,7 +27,7 @@ type Probe struct {
 
 // MARK: Initializers
 
-// NewProbe creates and returns a new probe with the given name.
+// NewProbe creates and returns a new probe.
 func NewProbe() *Probe {
 	return &Probe{
 		MaximumSignalLength: math.MaxInt32,
@@ -77,8 +79,7 @@ func (p *Probe) IsActive() bool {
 	return p.active
 }
 
-// Flush flushes the probe's input buffer if values were given to the buffer via
-// its input channel.
+// Flush flushes the probe's input channel buffer.
 func (p *Probe) Flush() {
 	p.signalMutex.Lock()
 	defer p.signalMutex.Unlock()
@@ -113,7 +114,7 @@ func (p *Probe) Push(value float64, flush bool) {
 	}
 }
 
-// ClearSignal removes all elements from the probe's input signal.
+// ClearSignal removes all elements from the probe's signal.
 func (p *Probe) ClearSignal() {
 	p.signalMutex.Lock()
 	p.signal = nil
@@ -127,7 +128,7 @@ func (p *Probe) Signal() []float64 {
 	return p.signal
 }
 
-// RecentValue retrieves the most recent value collected by the probe or 0.0 if
+// RecentValue retrieves the most recent value collected by the probe, or 0.0 if
 // a value has not been collected.
 func (p *Probe) RecentValue() float64 {
 	p.signalMutex.Lock()
