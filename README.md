@@ -1,4 +1,6 @@
 # probes
+[![GoDoc](https://godoc.org/github.com/colinc86/probes?status.svg)](https://godoc.org/github.com/colinc86/probes) [![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fcolinc86%2Fprobes%2Fbadge&style=flat)](https://actions-badge.atrox.dev/colinc86/probes/goto)
+
 The probes package helps examine numerical values that change over time by providing methods to collect values safely across goroutines through the `Probe` structure.
 
 ## Usage
