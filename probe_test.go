@@ -17,23 +17,14 @@ func TestCreateProbe(t *testing.T) {
 	}
 }
 
-func TestProbeActivation(t *testing.T) {
-	p := NewProbe()
-	p.Activate()
-	
-	if !p.IsActive() {
-		t.Error("The probe should be active.")
-	}
-}
-
 func TestSendValue(t *testing.T) {
 	p := NewProbe()
 	p.Activate()
 	p.C <- 1.0
-	p.Flush()	
+	p.Flush()
 
 	s := p.Signal()
-	
+
 	if len(s) != 1 {
 		t.Errorf("The length of s, %d, should be equal to 1.", len(s))
 		return
@@ -51,7 +42,7 @@ func TestPushValue(t *testing.T) {
 	p.Push(1.0, false)
 
 	s := p.Signal()
-	
+
 	if len(s) != 1 {
 		t.Errorf("The length of s, %d, should be equal to 1.", len(s))
 		return
@@ -67,7 +58,7 @@ func TestSendPushValue(t *testing.T) {
 	p := NewProbe()
 	p.InputBufferLength = 10
 	p.Activate()
-	
+
 	for i := 0; i < 10; i++ {
 		p.C <- float64(i)
 	}
@@ -75,7 +66,7 @@ func TestSendPushValue(t *testing.T) {
 	p.Push(10.0, true)
 
 	s := p.Signal()
-	
+
 	if len(s) != 11 {
 		t.Errorf("The length of s, %d, should be equal to 11.", len(s))
 		return
@@ -84,5 +75,29 @@ func TestSendPushValue(t *testing.T) {
 	v := s[10]
 	if v != 10.0 {
 		t.Errorf("The value, %f, should be equal to 10.0.", v)
+	}
+}
+
+func TestProbeDeactivation(t *testing.T) {
+	p := NewProbe()
+	p.Activate()
+
+	p.C <- 1.0
+
+	p.Flush()
+	p.Deactivate()
+
+	p.Push(3.0, true)
+
+	s := p.Signal()
+
+	if len(s) != 1 {
+		t.Errorf("The length of s, %d, should be equal to 1.", len(s))
+		return
+	}
+
+	v := s[0]
+	if v != 1.0 {
+		t.Errorf("The value, %f, should be equal to 1.0.", v)
 	}
 }
