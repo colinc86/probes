@@ -7,8 +7,7 @@ import (
 	"sync"
 )
 
-// Probe types reprepsent a digital probe which captures a signal and outputs
-// that signal to an array for inspection.
+// Probe types collect floating point values and expose those values safely.
 type Probe struct {
 	// The maximum length of the probe's internal signal history.
 	MaximumSignalLength int
@@ -32,7 +31,6 @@ func NewProbe() *Probe {
 	return &Probe{
 		MaximumSignalLength: math.MaxInt32,
 		InputBufferLength:   1,
-		C:                   make(chan float64),
 	}
 }
 
@@ -61,15 +59,13 @@ func (p *Probe) Activate() {
 }
 
 // Deactivate deactivates the probe and returns the signal it collected.
-func (p *Probe) Deactivate() []float64 {
+func (p *Probe) Deactivate() {
 	if !p.IsActive() {
-		return nil
+		return
 	}
 
 	p.active = false
 	close(p.C)
-
-	return p.signal
 }
 
 // IsActive returns the state of the probe.
@@ -97,6 +93,10 @@ func (p *Probe) Flush() {
 // Push appends a value to the probe's signal after, optionally, flushing any
 // values in the probe's input channel buffer.
 func (p *Probe) Push(value float64, flush bool) {
+	if !p.IsActive() {
+		return
+	}
+
 	p.signalMutex.Lock()
 	defer p.signalMutex.Unlock()
 
